@@ -43,7 +43,7 @@ def non_max_suppression(boxes, iou_thresh):
     return boxes[keep]
 
 # --- UI DESIGN ---
-st.title("🔬 Microplastic Detection & Analysis")
+st.title("🔬 AQUALENS:Microplastic Detection & Analysis")
 st.markdown("Upload sample images to calculate concentrations per liter.")
 
 # Sidebar for Parameters
@@ -108,4 +108,5 @@ if uploaded_files:
 
     # Download Results
     csv = df.to_csv(index=False).encode('utf-8')
+
     st.download_button("Download Analysis as CSV", data=csv, file_name="plastic_analysis.csv", mime="text/csv")
