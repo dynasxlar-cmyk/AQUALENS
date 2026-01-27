@@ -6,17 +6,6 @@ import numpy as np
 from PIL import Image
 import io
 
-# --- CONFIGURATION ---
-st.set_page_config(page_title="Microplastic Detector AI", layout="wide")
-
-# Constants from your original codeimport streamlit as st
-from ultralytics import YOLO
-import cv2
-import pandas as pd
-import numpy as np
-from PIL import Image
-import io
-
 # --- 1. PAGE CONFIGURATION ---
 st.set_page_config(
     page_title="AQUALENS | Secure Microplastic AI",
@@ -24,163 +13,88 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- 2. LOGIN SECURITY LOGIC ---
+# --- 2. LOGIN SECURITY GATE ---
 def check_password():
-    """Returns True if the user had the correct password."""
-    def password_entered():
-        # YOU CAN CHANGE THIS PASSWORD TO ANYTHING YOU LIKE
-        if st.session_state["password"] == "aqualens2026":
-            st.session_state["password_correct"] = True
-            del st.session_state["password"]  # don't store password in state
-        else:
-            st.session_state["password_correct"] = False
-
     if "password_correct" not in st.session_state:
-        # First run: Show the login screen
+        st.session_state["password_correct"] = False
+
+    if not st.session_state["password_correct"]:
+        # Centered Login UI
         st.markdown("""
             <div style='text-align: center; padding: 50px;'>
-                <h1 style='color: #004e92; font-size: 3rem; letter-spacing: 5px;'>AQUALENS</h1>
-                <p style='color: #666;'>PLEASE ENTER ACCESS KEY TO UNLOCK PORTAL</p>
+                <h1 style='color: #004e92; font-size: 3.5rem; letter-spacing: 5px; font-weight: 800; font-family: sans-serif;'>AQUALENS</h1>
+                <p style='color: #666; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 2px;'>Secure Analysis Portal</p>
+                <div style='margin: 20px auto; width: 100px; border-top: 3px solid #004e92;'></div>
             </div>
             """, unsafe_allow_html=True)
-        st.text_input("Access Key", type="password", on_change=password_entered, key="password")
-        return False
-    elif not st.session_state["password_correct"]:
-        # Wrong password
-        st.text_input("Access Key", type="password", on_change=password_entered, key="password")
-        st.error("🚫 Access Denied: Invalid Key")
-        return False
-    else:
-        # Password correct
-        return True
+        
+        _, col2, _ = st.columns([1, 1, 1])
+        with col2:
+            password = st.text_input("Enter Access Key", type="password")
+            if st.button("Unlock Portal", use_container_width=True):
+                if password == "aqualens2026": # You can change this password here
+                    st.session_state["password_correct"] = True
+                    st.rerun()
+                else:
+                    st.error("🚫 Access Denied: Invalid Key")
+        
+        # Stop execution here so the rest of the app is hidden
+        st.stop()
 
-# --- 3. MAIN APPLICATION (Only runs if logged in) ---
-if check_password():
-    
-    # --- CUSTOM SLEEK STYLING (CSS) ---
-    st.markdown("""
-        <style>
-        .stApp { background-color: #f8f9fa; }
-        .header-container {
-            display: flex; flex-direction: column; align-items: center;
-            padding: 40px; background: linear-gradient(135deg, #004e92 0%, #000428 100%);
-            border-radius: 20px; color: white; margin-bottom: 30px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        }
-        .logo-text { font-weight: 800; font-size: 4rem; letter-spacing: 10px; margin: 0; }
-        .sub-text { font-size: 1.2rem; opacity: 0.8; letter-spacing: 3px; text-transform: uppercase; }
-        div[data-testid="stMetric"] {
-            background-color: white; padding: 20px; border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #eef2f6;
-        }
-        </style>
-        """, unsafe_allow_html=True)
+# Run the gate
+check_password()
 
-    # Sidebar Logout & Parameters
-    if st.sidebar.button("🔒 Log Out"):
+# --- 3. THE FULL APPLICATION (Runs only after login) ---
+
+# Sleek Custom Styling (CSS)
+st.markdown("""
+    <style>
+    .stApp { background-color: #f8f9fa; }
+    .header-container {
+        display: flex; flex-direction: column; align-items: center;
+        padding: 40px; background: linear-gradient(135deg, #004e92 0%, #000428 100%);
+        border-radius: 20px; color: white; margin-bottom: 30px;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .logo-text { font-weight: 800; font-size: 4rem; letter-spacing: 10px; margin: 0; font-family: sans-serif; }
+    .sub-text { font-size: 1.2rem; opacity: 0.8; letter-spacing: 3px; text-transform: uppercase; }
+    div[data-testid="stMetric"] {
+        background-color: white; padding: 20px; border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #eef2f6;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+# Sidebar (Logout & Original Parameters)
+with st.sidebar:
+    st.markdown("### 🔒 Security")
+    if st.button("Log Out of Portal"):
         st.session_state["password_correct"] = False
         st.rerun()
+    
+    st.markdown("---")
+    st.header("⚙️ Parameters")
+    area_img = st.number_input("Area of Image (m²)", value=0.48)
+    filter_area = st.number_input("Filter Area (m²)", value=17.35)
+    vol_l = st.number_input("Sample Volume (L)", value=0.25)
+    iou_thresh = st.slider("NMS Threshold", 0.1, 1.0, 0.3)
 
-    # Constants
-    AREA_OF_IMAGE = 0.48
-    FILTER_AREA = 17.35
-    SAMPLE_VOLUME_L = 0.25
-    IOU_THRESHOLD = 0.3
+# Header Section
+st.markdown("""
+    <div class="header-container">
+        <p class="logo-text">AQUALENS</p>
+        <p class="sub-text">Precision Microplastic Detection AI</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-    # --- CACHED MODEL LOADING ---
-    @st.cache_resource
-    def load_model():
-        return YOLO("best.pt") 
-    model = load_model()
-
-    # --- HELPER FUNCTIONS ---
-    def non_max_suppression(boxes, iou_thresh):
-        if len(boxes) == 0: return boxes
-        x1, y1, x2, y2, scores = boxes[:, 0], boxes[:, 1], boxes[:, 2], boxes[:, 3], boxes[:, 4]
-        areas = (x2 - x1) * (y2 - y1)
-        order = scores.argsort()[::-1]
-        keep = []
-        while order.size > 0:
-            i = order[0]; keep.append(i)
-            xx1, yy1 = np.maximum(x1[i], x1[order[1:]]), np.maximum(y1[i], y1[order[1:]])
-            xx2, yy2 = np.minimum(x2[i], x2[order[1:]]), np.minimum(y2[i], y2[order[1:]])
-            w, h = np.maximum(0.0, xx2 - xx1), np.maximum(0.0, yy2 - yy1)
-            inter = w * h
-            iou = inter / (areas[i] + areas[order[1:]] - inter)
-            order = order[np.where(iou <= iou_thresh)[0] + 1]
-        return boxes[keep]
-
-    # --- HEADER SECTION ---
-    st.markdown("""
-        <div class="header-container">
-            <p class="logo-text">AQUALENS</p>
-            <p class="sub-text">Precision Microplastic Detection AI</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-    # Sidebar for Parameters
-    st.sidebar.header("Calculation Parameters")
-    area_img = st.sidebar.number_input("Area of Image (m²)", value=AREA_OF_IMAGE)
-    filter_area = st.sidebar.number_input("Filter Area (m²)", value=FILTER_AREA)
-    vol_l = st.sidebar.number_input("Sample Volume (L)", value=SAMPLE_VOLUME_L)
-
-    uploaded_files = st.file_uploader("📤 Choose microscope images...", type=["jpg", "jpeg", "png"], accept_multiple_files=True)
-
-    if uploaded_files:
-        all_results = []
-        with st.status("AQUALENS AI is analyzing samples...", expanded=True) as status:
-            for uploaded_file in uploaded_files:
-                file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
-                opencv_image = cv2.imdecode(file_bytes, 1)
-                
-                results = model(opencv_image, conf=0.1)
-                boxes = results[0].boxes.data.cpu().numpy() if len(results[0].boxes.data) else np.empty((0,6))
-                
-                num_particles = non_max_suppression(boxes[:, :5], IOU_THRESHOLD).shape[0] if boxes.shape[0] > 0 else 0
-                particles_in_filter = (num_particles / area_img) * filter_area
-                particles_per_L = particles_in_filter / vol_l
-                
-                all_results.append({
-                    "Image": uploaded_file.name,
-                    "Count": num_particles,
-                    "Filter Total": round(particles_in_filter, 2),
-                    "Particles/L": round(particles_per_L, 2),
-                    "processed_img": results[0].plot()
-                })
-            status.update(label="Analysis Complete!", state="complete")
-
-        # DISPLAY RESULTS
-        df = pd.DataFrame(all_results).drop(columns=['processed_img'])
-        m1, m2, m3 = st.columns(3)
-        m1.metric("Avg Particles/L", round(df["Particles/L"].mean(), 2))
-        m2.metric("Total Particles Found", int(df["Count"].sum()))
-        m3.metric("Max Density", f"{df['Particles/L'].max()} P/L")
-
-        st.dataframe(df, use_container_width=True)
-
-        with st.expander("🖼️ View Annotated Visuals", expanded=True):
-            cols = st.columns(3)
-            for idx, res in enumerate(all_results):
-                cols[idx % 3].image(res['processed_img'], caption=res['Image'], use_container_width=True)
-
-        csv = df.to_csv(index=False).encode('utf-8')
-        st.download_button("📥 Download Analysis CSV", data=csv, file_name="aqualens_report.csv", mime="text/csv")
-    else:
-        st.info("Awaiting sample upload. Please upload images in the main area.")
-AREA_OF_IMAGE = 0.48
-FILTER_AREA = 17.35
-SAMPLE_VOLUME_L = 0.25
-IOU_THRESHOLD = 0.3
-
-# --- CACHED MODEL LOADING ---
+# --- 4. CACHED MODEL LOADING ---
 @st.cache_resource
 def load_model():
-    # Ensure best.pt is in the same directory or provide the full path
-    return YOLO("best.pt") 
+    return YOLO("best.pt")
 
 model = load_model()
 
-# --- HELPER FUNCTIONS ---
+# --- 5. HELPER FUNCTIONS ---
 def non_max_suppression(boxes, iou_thresh):
     if len(boxes) == 0: return boxes
     x1, y1, x2, y2, scores = boxes[:, 0], boxes[:, 1], boxes[:, 2], boxes[:, 3], boxes[:, 4]
@@ -188,83 +102,62 @@ def non_max_suppression(boxes, iou_thresh):
     order = scores.argsort()[::-1]
     keep = []
     while order.size > 0:
-        i = order[0]
-        keep.append(i)
+        i = order[0]; keep.append(i)
         xx1, yy1 = np.maximum(x1[i], x1[order[1:]]), np.maximum(y1[i], y1[order[1:]])
         xx2, yy2 = np.minimum(x2[i], x2[order[1:]]), np.minimum(y2[i], y2[order[1:]])
         w, h = np.maximum(0.0, xx2 - xx1), np.maximum(0.0, yy2 - yy1)
         inter = w * h
         iou = inter / (areas[i] + areas[order[1:]] - inter)
-        inds = np.where(iou <= iou_thresh)[0]
-        order = order[inds + 1]
+        order = order[np.where(iou <= iou_thresh)[0] + 1]
     return boxes[keep]
 
-# --- UI DESIGN ---
-st.title("🔬Microplastic Detection & Analysis")
-st.markdown("Upload sample images to calculate concentrations per liter.")
-
-# Sidebar for Parameters
-st.sidebar.header("Calculation Parameters")
-area_img = st.sidebar.number_input("Area of Image (m²)", value=AREA_OF_IMAGE)
-filter_area = st.sidebar.number_input("Filter Area (m²)", value=FILTER_AREA)
-vol_l = st.sidebar.number_input("Sample Volume (L)", value=SAMPLE_VOLUME_L)
-
-uploaded_files = st.file_uploader("Choose images...", type=["jpg", "jpeg", "png"], accept_multiple_files=True)
+# --- 6. MAIN WORKFLOW ---
+uploaded_files = st.file_uploader("📤 Upload microscope images...", type=["jpg", "jpeg", "png"], accept_multiple_files=True)
 
 if uploaded_files:
     all_results = []
     
-    for uploaded_file in uploaded_files:
-        # Convert uploaded file to OpenCV format
-        file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
-        opencv_image = cv2.imdecode(file_bytes, 1)
-        
-        # Detection
-        results = model(opencv_image, conf=0.1)
-        boxes = results[0].boxes.data.cpu().numpy() if len(results[0].boxes.data) else np.empty((0,6))
-        
-        if boxes.shape[0] > 0:
-            filtered_boxes = non_max_suppression(boxes[:, :5], IOU_THRESHOLD)
-            num_particles = filtered_boxes.shape[0]
-        else:
-            num_particles = 0
+    with st.status("Analyzing samples with YOLO AI...", expanded=True) as status:
+        for uploaded_file in uploaded_files:
+            file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
+            opencv_image = cv2.imdecode(file_bytes, 1)
             
-        # Calculations
-        particles_in_filter = (num_particles / area_img) * filter_area
-        particles_per_L = particles_in_filter / vol_l
-        
-        # Annotate
-        annotated_frame = results[0].plot()
-        gray_frame = cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2GRAY)
-        
-        # Store for Table
-        all_results.append({
-            "Image": uploaded_file.name,
-            "Count": num_particles,
-            "Filter Total": round(particles_in_filter, 2),
-            "Particles/L": round(particles_per_L, 2),
-            "processed_img": gray_frame
-        })
+            # Detection
+            results = model(opencv_image, conf=0.1)
+            boxes = results[0].boxes.data.cpu().numpy() if len(results[0].boxes.data) else np.empty((0,6))
+            
+            num_particles = non_max_suppression(boxes[:, :5], iou_thresh).shape[0] if boxes.shape[0] > 0 else 0
+            
+            # Original Calculations
+            particles_in_filter = (num_particles / area_img) * filter_area
+            particles_per_L = particles_in_filter / vol_l
+            
+            all_results.append({
+                "Image": uploaded_file.name,
+                "Count": num_particles,
+                "Filter Total": round(particles_in_filter, 2),
+                "Particles/L": round(particles_per_L, 2),
+                "processed_img": results[0].plot()
+            })
+        status.update(label="Analysis Complete!", state="complete")
 
-    # --- DISPLAY ---
-    df = pd.DataFrame(all_results).drop(columns=['processed_img'])
-    
-    # Summary Metrics
+    # Metrics Display
+    df = pd.DataFrame(all_results)
     m1, m2, m3 = st.columns(3)
     m1.metric("Avg Particles/L", round(df["Particles/L"].mean(), 2))
-    m2.metric("Total Particles Found", df["Count"].sum())
-    m3.metric("Max Density", df["Particles/L"].max())
+    m2.metric("Total Particles Found", int(df["Count"].sum()))
+    m3.metric("Max Density", f"{df['Particles/L'].max()} P/L")
 
-    st.dataframe(df, use_container_width=True)
+    st.dataframe(df.drop(columns=['processed_img']), use_container_width=True)
 
-    # Gallery view of processed images
-    with st.expander("View Processed Annotated Images"):
+    # Gallery
+    with st.expander("🖼️ View Annotated Visuals"):
         cols = st.columns(3)
         for idx, res in enumerate(all_results):
-            cols[idx % 3].image(res['processed_img'], caption=res['Image'])
+            cols[idx % 3].image(res['processed_img'], caption=res['Image'], use_container_width=True)
 
-    # Download Results
-    csv = df.to_csv(index=False).encode('utf-8')
-
-    st.download_button("Download Analysis as CSV", data=csv, file_name="plastic_analysis.csv", mime="text/csv")
-
+    # Export
+    csv = df.drop(columns=['processed_img']).to_csv(index=False).encode('utf-8')
+    st.download_button("📥 Download Analysis CSV", data=csv, file_name="aqualens_report.csv", mime="text/csv")
+else:
+    st.info("System Ready. Please upload images to begin.")
