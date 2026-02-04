@@ -83,7 +83,7 @@ with st.sidebar:
 st.markdown("""
     <div class="header-container">
         <p class="logo-text">AQUALENS</p>
-        <p class="sub-text">Precision Microplastic Detection AI</p>
+        <p class="sub-text">Precise Microplastic Detection AI</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -161,4 +161,5 @@ if uploaded_files:
     st.download_button("📥 Download Analysis CSV", data=csv, file_name="aqualens_report.csv", mime="text/csv")
 else:
     st.info("System Ready. Please upload images to begin.")
+
 
