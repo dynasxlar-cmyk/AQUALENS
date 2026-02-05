@@ -22,7 +22,7 @@ def check_password():
         # Centered Login UI
         st.markdown("""
             <div style='text-align: center; padding: 50px;'>
-                <h1 style='color: #004e92; font-size: 3.5rem; letter-spacing: 5px; font-weight: 800; font-family: sans-serif;'>AQUALENS</h1>
+                <h1 style='color: #004e92; font-size: 3.5rem; letter-spacing: 5px; font-weight: 800; font-family: sans-serif;'>LETS RAPE WHEID</h1>
                 <p style='color: #666; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 2px;'>Secure Analysis Portal</p>
                 <div style='margin: 20px auto; width: 100px; border-top: 3px solid #004e92;'></div>
             </div>
@@ -161,5 +161,6 @@ if uploaded_files:
     st.download_button("📥 Download Analysis CSV", data=csv, file_name="aqualens_report.csv", mime="text/csv")
 else:
     st.info("System Ready. Please upload images to begin.")
+
 
 
