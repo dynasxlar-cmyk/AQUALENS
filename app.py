@@ -32,7 +32,7 @@ def check_password():
         with col2:
             password = st.text_input("Enter Access Key", type="password")
             if st.button("Unlock Portal", use_container_width=True):
-                if password == "sirjorgepogi": # You can change this password here
+                if password == "wheidpogi": # You can change this password here
                     st.session_state["password_correct"] = True
                     st.rerun()
                 else:
@@ -161,6 +161,7 @@ if uploaded_files:
     st.download_button("📥 Download Analysis CSV", data=csv, file_name="aqualens_report.csv", mime="text/csv")
 else:
     st.info("System Ready. Please upload images to begin.")
+
 
 
 
